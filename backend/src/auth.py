@@ -1,7 +1,7 @@
 import json
 from flask import request, _request_ctx_stack, abort, Flask
 from functools import wraps
-from jose import jwt
+import jwt
 from urllib.request import urlopen
 # don't forget tp update wheel and werkzeug !
 # use pip3 install --force-reinstall -r requirements.t

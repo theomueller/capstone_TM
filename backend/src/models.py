@@ -28,6 +28,7 @@ def setup_db(app):
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     db.app = app
     db.init_app(app)
+    db_drop_and_create_all()
 
 
 
@@ -44,11 +45,10 @@ def db_drop_and_create_all():
     db.drop_all()
     db.create_all()
     # add one demo row which is helping in POSTMAN test
-    movie = Movie(
-        title='Big Blue',
-        release=datetime.utcnow
-    )
+    movie = Movie(title='Big Blue')
     movie.insert()
+    actor = Actor(name='John Doe')
+    actor.insert()
    
 
 '''
@@ -63,7 +63,7 @@ class Movie(db.Model):
     __tablename__='movies'
     id = Column(db.Integer, primary_key=True)
     title = Column(db.String(80), unique=True)
-    release = db.Column(db.DateTime, default=datetime.utcnow)
+    release = Column(db.DateTime, default=datetime.utcnow)
     roles = db.relationship('Role', backref=db.backref('movie'), lazy='joined')
 
     def __repr__(self):
