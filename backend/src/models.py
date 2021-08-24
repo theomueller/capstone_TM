@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 from sqlalchemy import Column, String, Integer
+from sqlalchemy.sql.expression import null
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import json
@@ -112,7 +113,9 @@ class Movie(db.Model):
 class Actor(db.Model):
     __tablename__ = "actors"
     id = Column(db.Integer, primary_key=True)
-    name = Column(db.String)
+    name = Column(db.String, nullable=False)
+    age = Column(db.Integer)
+    gender = Column(db.String)
     roles = db.relationship('Role', backref=db.backref('actor'), lazy='joined')
 
     def __repr__(self):
@@ -124,7 +127,7 @@ class Actor(db.Model):
     def short(self):
         return {
             'id': self.id,
-            'name':self.title
+            'name':self.name
             }
 
     '''
@@ -166,6 +169,13 @@ class Role(db.Model):
             'actor': self.actor_id
             }
 
+    def actor(self):
+        actor = db.session.query(Actor).filter(id=self.actor_id)
+        return actor.short()
+
+    def movie(self):
+        movie = db.session.query(Movie).filter(id=self.movie_id)
+        return movie.short()
     '''
     insert(): inserts a new model into a database
     '''

@@ -26,106 +26,167 @@ def create_app(test_config=None):
 
     '''
     GET /movies
-            it should be a public endpoint
-            it contains only the movies.short() data representation
-        returns status code 200 and json {"success": True, "movies": movies}
-        where movies is the list of movies
-            or appropriate status code indicating reason for failure
     '''
-
-
     @app.route('/movies', methods=['GET'])
-    # @requires_auth('get:drinks') -> no need as it is publick
-    def get_movies():
+    @requires_auth('get:movies')
+    def get_movies(_):
         movies_all = Movie.query.all()
-        movies = [drink.short() for drink in movies_all]
+        movies = [movie.short() for movie in movies_all]
         return jsonify({
             'success': True,
             'drinks': movies
             }), 200
 
-    ''' main comment
-    
-    @TODO implement endpoint
-        GET /drinks-detail
-            it should require the 'get:drinks-detail' permission
-            it should contain the drink.long() data representation
-        returns status code 200 and json {"success": True, "drinks": drinks}
-        where drinks is the list of drinks
-            or appropriate status code indicating reason for failure
     '''
-
-
-    @app.route("/drinks-detail")
-    @requires_auth('get:drinks-detail')
-    def get_details_drinks(payload):
-        drinks = [drink.long() for drink in Movie.query.all()]
+    GET /movies/id
+    '''
+    @app.route('/movies/<int:movie_id>', methods=['GET'])
+    @requires_auth('get:movies')
+    def role_movie(movie_id):
+        movie = Movie.query.get(movie_id)
+        roles_movie = Role.query.join(Actor).filter(Role.movie_id==movie_id).all()
+        actors = [role.actor() for role in roles_movie]
         return jsonify({
             'success': True,
-            'drinks': drinks
+            'movie': movie.title,
+            'actors': actors
             }), 200
 
+    '''
+    GET /actors
+    '''
+    @app.route('/actors', methods=['GET'])
+    @requires_auth('get:actors')
+    def get_actors(_):
+        actors_all = Actor.query.all()
+        actors = [actor.short() for actor in actors_all]
+        return jsonify({
+            'success': True,
+            'drinks': actors
+            }), 200
 
     '''
-    @TODO implement endpoint
-        POST /drinks
-            it should create a new row in the drinks table
-            it should require the 'post:drinks' permission
-            it should contain the drink.long() data representation
-        returns status code 200 and json {"success": True, "drinks": drink}
-        where drink an array containing only the newly created drink
-            or appropriate status code indicating reason for failure
+    GET /actors/id
     '''
+    @app.route('/actors/<int:actor_id>', methods=['GET'])
+    @requires_auth('get:actors')
+    def role_actor(actor_id):
+        actor = Actor.query.get(actor_id)
+        roles_actor = Role.query.join(Movie).filter(Role.actor_id==actor_id).all()
+        movies = [role.movie() for role in roles_actor]
+        return jsonify({
+            'success': True,
+            'actor': actor.name,
+            'movies': movies
+            }), 200
+    '''
+    DELETE /movies
+    '''
+    @app.route("/movies/<int:movie_id>", methods=['DELETE'])
+    @requires_auth('delete:movies')
+    def delete_movie(_, movie_id):
+        # check if the item is existing
+        movie = Movie.query.filter(Movie.id == movie_id).one_or_none()
+        try:
+            if movie is None:
+                abort(404)
 
+            movie.delete()
+            return jsonify({
+                    'success': True,
+                    'delete': movie.id
+                }), 200
+        except Exception:
+            abort(422)
 
-    @app.route("/drinks", methods=['POST'])
-    @requires_auth('post:drinks')
-    def create_drink(payload):
+    '''
+    DELETE /actors
+    '''
+    @app.route("/actors/<int:actor_id>", methods=['DELETE'])
+    @requires_auth('delete:actors')
+    def delete_actor(_, actor_id):
+        # check if the item is existing
+        actor = Actor.query.filter(Actor.id == actor_id).one_or_none()
+        try:
+            if actor is None:
+                abort(404)
+
+            actor.delete()
+            return jsonify({
+                    'success': True,
+                    'delete': actor.id
+                }), 200
+        except Exception:
+            abort(422)
+
+    '''
+    POST /movies
+    '''
+    @app.route("/movies", methods=['POST'])
+    @requires_auth('post:movies')
+    def create_movie(payload):
         # get the body from the request
         body = request.get_json()
         try:
             # extract the title
             new_title = body.get('title')
-            # extract the recipe and convert it in a array of strings
-            # source: https://www.geeksforgeeks.org/
-            #    python-convert-dictionary-object-into-string/
-            new_recipe = json.dumps([body.get('recipe')])
+            new_release =body.get('date')
             # add a test to avoid creating emppty drinks
-            if (new_title is None or new_recipe is None):
+            if (new_title is None or new_release is None):
                 abort(400)
 
-            drink = Drink(
+            movie = Movie(
                 title=new_title,
-                recipe=new_recipe)
-            drink.insert()
+                release=new_release)
+            movie.insert()
 
             return jsonify({
                 'success': True,
-                'drinks': [drink.long()],
+                'movies': [movie.short()],
             })
         except Exception:
             abort(422)
 
+    '''
+    POST /actors
+    '''
+    @app.route("/actors", methods=['POST'])
+    @requires_auth('post:actors')
+    def create_actor(payload):
+        # get the body from the request
+        body = request.get_json()
+        try:
+            # extract the title
+            new_name = body.get('name')
+            new_age =body.get('age')
+            new_gender=body.get('gender')
+            # add a test to avoid creating emppty drinks
+            if (new_name is None 
+            or new_age is None
+            or new_gender is None):
+                abort(400)
+
+            actor = Actor(
+                name=new_name,
+                age=new_age,
+                gender=new_gender)
+            actor.insert()
+
+            return jsonify({
+                'success': True,
+                'actors': [actor.short()],
+            })
+        except Exception:
+            abort(422)
 
     '''
-    @TODO implement endpoint
-        PATCH /drinks/<id>
-            where <id> is the existing model id
-            it should respond with a 404 error if <id> is not found
-            it should update the corresponding row for <id>
-            it should require the 'patch:drinks' permission
-            it should contain the drink.long() data representation
-        returns status code 200 and json {"success": True, "drinks": drink}
-        where drink an array containing only the updated drink
-            or appropriate status code indicating reason for failure
+        PATCH /movies/<id>
     '''
-
-
-    @app.route("/drinks/<int:drink_id>", methods=['PATCH'])
-    @requires_auth('patch:drinks')
-    def update_drink(_, drink_id):
+    @app.route("/movies/<int:movie_id>", methods=['PATCH'])
+    @requires_auth('patch:movies')
+    def update_movie(_, movie_id):
         # check if the item is existing
-        drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
+        drink = Movie.query.filter(Movie.id == movie_id).one_or_none()
         # respond with 404 if drink is empty = <id> not founbd
         if drink is None:
             abort(404)
@@ -144,36 +205,6 @@ def create_app(test_config=None):
         except Exception:
             abort(422)
 
-
-    '''
-    @TODO implement endpoint
-        DELETE /drinks/<id>
-            where <id> is the existing model id
-            it should respond with a 404 error if <id> is not found
-            it should delete the corresponding row for <id>
-            it should require the 'delete:drinks' permission
-        returns status code 200 and json {"success": True, "delete": id}
-        where id is the id of the deleted record
-            or appropriate status code indicating reason for failure
-    '''
-
-
-    @app.route("/drinks/<int:drink_id>", methods=['DELETE'])
-    @requires_auth('delete:drinks')
-    def delete_drink(_, drink_id):
-        # check if the item is existing
-        drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
-        try:
-            if drink is None:
-                abort(404)
-
-            drink.delete()
-            return jsonify({
-                    'success': True,
-                    'delete': drink.id
-                }), 200
-        except Exception:
-            abort(422)
 
 
     # Error Handling

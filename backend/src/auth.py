@@ -1,7 +1,8 @@
+import os
 import json
 from flask import request, _request_ctx_stack, abort, Flask
 from functools import wraps
-import jwt
+from jose import jwt
 from urllib.request import urlopen
 # don't forget tp update wheel and werkzeug !
 # use pip3 install --force-reinstall -r requirements.t
@@ -10,9 +11,9 @@ from urllib.request import urlopen
 # ALGORITHMS = ['RS256']
 # API_AUDIENCE = 'dev'
 
-AUTH0_DOMAIN = 'capstone-theo.eu.auth0.com'
-ALGORITHMS = ['RS256']
-API_AUDIENCE = 'movies'
+AUTH0_DOMAIN = os.environ["AUTH0_DOMAIN"]
+ALGORITHMS = os.environ["ALGO"]
+API_AUDIENCE = os.environ["API"]
 
 # to get the token after the user signed in
 # https://coffee-shop-theo.eu.auth0.com/authorize?audience=drinks&response_type=
@@ -36,7 +37,7 @@ class AuthError(Exception):
 # Auth Header
 
 '''
-@TODO implement get_token_auth_header() method
+implement get_token_auth_header() method
     it should attempt to get the header from the request
         it should raise an AuthError if no header is present
     it should attempt to split bearer and the token
@@ -79,7 +80,7 @@ def get_token_auth_header():
 
 
 '''
-@TODO implement check_permissions(permission, payload) method
+implement check_permissions(permission, payload) method
     @INPUTS
         permission: string permission (i.e. 'post:drink')
         payload: decoded jwt payload
@@ -109,7 +110,7 @@ def check_permissions(permission, payload):
 
 
 '''
-@TODO implement verify_decode_jwt(token) method
+implement verify_decode_jwt(token) method
     @INPUTS
         token: a json web token (string)
 
@@ -179,7 +180,7 @@ def verify_decode_jwt(token):
 
 
 '''
-@TODO implement @requires_auth(permission) decorator method
+implement @requires_auth(permission) decorator method
     @INPUTS
         permission: string permission (i.e. 'post:drink')
 
