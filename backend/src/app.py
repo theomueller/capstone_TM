@@ -147,7 +147,7 @@ def create_app(test_config=None):
         try:
             # extract the title
             new_title = body.get('title')
-            new_release =body.get('date')
+            new_release =body.get('release')
             # add a test to avoid creating emppty drinks
             if (new_title is None or new_release is None):
                 abort(400)

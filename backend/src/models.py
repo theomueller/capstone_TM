@@ -73,9 +73,6 @@ class Movie(db.Model):
     actors = db.relationship('Actor',secondary="roles",back_populates="movies")
     #roles = db.relationship('Role', backref=db.backref('movie'), lazy='joined')
 
-    def __init__(self,title):
-        self.title=title
-
     def __repr__(self):
         return json.dumps(self.short())
 

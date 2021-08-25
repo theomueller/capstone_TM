@@ -23,11 +23,11 @@ class CapstoneTestCase(unittest.TestCase):
         self.app = create_app()
         self.client = self.app.test_client
         self.database_name = "testdb"
-        self.database_path = "postgres://{}/{}".format('localhost:5432', self.database_name)
+        self.database_path = "postgresql://{}/{}".format('localhost:5432', self.database_name)
         setup_db(self.app, self.database_path)
 
         """ Create instances to test post """
-        self.new_movie = {"title":"movie unit", "release": "10/05/2002"}
+        self.new_movie = {"title":"movie unit", "release":"11/11/2011"}
         self.new_actor = {"name":"actor unit", "age":"10", "gender":"unit"}
 
         # binds the app to the current context
@@ -105,7 +105,7 @@ class CapstoneTestCase(unittest.TestCase):
 
     # Error Behavior GET movies
     def test_404_get_movies_with_token_producer(self):
-        res = self.client().get('/movies?1000', headers={
+        res = self.client().get('/movies/a', headers={
             "Authorization": 'bearer ' + self.token_producer})
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 404)
@@ -113,7 +113,7 @@ class CapstoneTestCase(unittest.TestCase):
 
     # Error Behavior GET actors
     def test_404_get_actors_with_token_producer(self):
-        res = self.client().get('/actors?1000', headers={
+        res = self.client().get('/actors/a', headers={
             "Authorization": 'bearer ' + self.token_producer})
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 404)
@@ -141,7 +141,7 @@ class CapstoneTestCase(unittest.TestCase):
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data['success'],False)
-        self.assertEqual(data['message'],'ressource not found')
+        self.assertEqual(data['message'],'resource not found')
         
     # Error behavior for delete movies
     def test_404_delete_movies_with_token_producer(self):
@@ -150,7 +150,7 @@ class CapstoneTestCase(unittest.TestCase):
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data['success'],False)
-        self.assertEqual(data['message'],'ressource not found')
+        self.assertEqual(data['message'],'resource not found')
 
     # ENDPOINTS POST /actors and /movies    
     def test_200_post_actors_with_token_producer(self):
@@ -158,7 +158,7 @@ class CapstoneTestCase(unittest.TestCase):
             "Authorization": 'bearer ' + self.token_producer})
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
-        self.assertTrue(len(data['movies']))
+        self.assertTrue(len(data['actors']))
         self.assertEqual(data['success'],True)
     
     def test_200_post_movies_with_token_producer(self):
@@ -169,7 +169,7 @@ class CapstoneTestCase(unittest.TestCase):
             "Authorization": 'bearer ' + self.token_producer})
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(len(data['movies']))
+        self.assertTrue(len(data['movies']))
         self.assertEqual(data['success'],True)
 
     # Error behavior Post /actors
@@ -188,7 +188,7 @@ class CapstoneTestCase(unittest.TestCase):
     def test_422_post_actors_with_token_producer(self):
         res = self.client().post(
             '/movies',
-            json={"release":"12/10/2020"},
+            json={"tit":"new"},
             headers={
                 "Authorization": 'bearer ' + self.token_producer})
         data = json.loads(res.data)
@@ -247,7 +247,7 @@ class CapstoneTestCase(unittest.TestCase):
         res = self.client().get('/movies', headers={
             "Authorization": 'bearer '})
         data = json.loads(res.data)
-        self.assertEqual(res.status_code, 403)
+        self.assertEqual(res.status_code, 401)
         self.assertEqual(data['success'], False)
 
 
@@ -265,7 +265,7 @@ class CapstoneTestCase(unittest.TestCase):
             '/movies',
             json=self.new_movie,
             headers={
-            "Authorization": 'bearer ' + self.token_producer})
+            "Authorization": 'bearer ' + self.token_assistant})
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 403)
         self.assertEqual(data['success'],False)
