@@ -6,15 +6,10 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import json
 
-''' To initiliase a env variable it should be EXPORT in the cmd line'''
-''' Moreover don't forget to start the server'''
-if (os.getenv("HEROKU_DEPLOY")==True):
-    database_path = os.environ['DATABASE_URL']
-    if database_path.startswith("postgres://"):
-        database_path = database_path.replace("postgres://", "postgresql://", 1)
-else:
-    ''' Test db for dev -> to be delete bevor prod'''
-    database_path = 'postgresql://meunieth@localhost:5432/testdb'
+database_path = os.environ['DATABASE_URL']
+if database_path.startswith("postgres://"):
+    database_path = database_path.replace("postgres://", "postgresql://", 1)
+
 
 db = SQLAlchemy()
 
@@ -24,7 +19,7 @@ setup_db(app)
 '''
 
 
-def setup_db(app):
+def setup_db(app,database_path):
     app.config["SQLALCHEMY_DATABASE_URI"] = database_path
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     db.app = app
@@ -46,10 +41,20 @@ def db_drop_and_create_all():
     db.drop_all()
     db.create_all()
     # add one demo row which is helping in POSTMAN test
-    movie = Movie(title='Big Blue')
-    movie.insert()
-    actor = Actor(name='John Doe')
-    actor.insert()
+    movie1 = Movie(title='Big Blue')
+    movie1.insert()
+    movie2 = Movie(title='The 5th Element')
+    movie2.insert()
+    actor1 = Actor(name='John Doe')
+    actor1.insert()
+    actor2 = Actor(name='John Smith')
+    actor2.insert()
+    role = Role(movie_id=movie1.id, actor_id= actor1.id)
+    role.insert()
+    role = Role(movie_id=movie1.id, actor_id= actor2.id)
+    role.insert()
+    role = Role(movie_id=movie2.id, actor_id= actor2.id)
+    role.insert()
    
 
 '''
@@ -65,7 +70,11 @@ class Movie(db.Model):
     id = Column(db.Integer, primary_key=True)
     title = Column(db.String(80), unique=True)
     release = Column(db.DateTime, default=datetime.utcnow)
-    roles = db.relationship('Role', backref=db.backref('movie'), lazy='joined')
+    actors = db.relationship('Actor',secondary="roles",back_populates="movies")
+    #roles = db.relationship('Role', backref=db.backref('movie'), lazy='joined')
+
+    def __init__(self,title):
+        self.title=title
 
     def __repr__(self):
         return json.dumps(self.short())
@@ -77,7 +86,8 @@ class Movie(db.Model):
     def short(self):
         return {
             'id': self.id,
-            'name':self.title
+            'name':self.title,
+            'actors': [actor.name for actor in self.actors]
             }
 
     '''
@@ -116,7 +126,8 @@ class Actor(db.Model):
     name = Column(db.String, nullable=False)
     age = Column(db.Integer)
     gender = Column(db.String)
-    roles = db.relationship('Role', backref=db.backref('actor'), lazy='joined')
+    movies = db.relationship('Movie', secondary="roles",back_populates="actors")
+    #roles = db.relationship('Role', backref=db.backref('actor'), lazy='joined')
 
     def __repr__(self):
         return f"<Actor {self.id} name:{self.name}>"
@@ -152,30 +163,29 @@ class Actor(db.Model):
 
 class Role(db.Model):
     __tablename__ = "roles"
+
+    __mapper_args__ = {
+        'confirm_deleted_rows': False
+    }
+
     id = Column(db.Integer, primary_key=True)
-    movie_id = Column(db.Integer, db.ForeignKey('movies.id'), nullable=False)
-    actor_id = Column(db.Integer, db.ForeignKey('actors.id'), nullable=False)
+    movie_id = Column(db.Integer, db.ForeignKey('movies.id'))
+    actor_id = Column(db.Integer, db.ForeignKey('actors.id'))
+    #movie = db.relationship(Movie, backref=db.backref("roles", cascade="all, delete-orphan"),overlaps="actors,movies")
+    #actor = db.relationship(Actor, backref=db.backref("roles",cascade="all, delete-orphan"),overlaps="actors,movies")
    
     def __repr__(self):
         return f"<Role {self.id}>"
 
     '''
-    short(): short form representation of the movie without date
+    short(): short form representation of the role
     '''
     def short(self):
         return {
             'id': self.id,
-            'movie':self.movie_id,
-            'actor': self.actor_id
+            'movie':self.movie,
+            'actor': self.actor
             }
-
-    def actor(self):
-        actor = db.session.query(Actor).filter(id=self.actor_id)
-        return actor.short()
-
-    def movie(self):
-        movie = db.session.query(Movie).filter(id=self.movie_id)
-        return movie.short()
     '''
     insert(): inserts a new model into a database
     '''

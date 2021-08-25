@@ -7,10 +7,27 @@ from models import  setup_db, Movie, Actor, Role
 from auth import AuthError, requires_auth
 
 def create_app(test_config=None):
+    ''' To initiliase a env variable it should be EXPORT in the cmd line'''
+    ''' Moreover don't forget to start the server'''
+    
+    database_path = os.environ['DATABASE_URL']
+    if database_path.startswith("postgres://"):
+        database_path = database_path.replace("postgres://", "postgresql://", 1)
+    
 
     app = Flask(__name__)
-    setup_db(app)
+    setup_db(app, database_path)
     CORS(app)
+
+    # CORS Headers
+    @app.after_request
+    def after_request(response):
+        response.headers.add('Access-Control-Allow-Headers',
+                             'Content-Type,Authorization,true')
+        response.headers.add('Access-Control-Allow-Methods',
+                             'GET,POST,PUT,PATCH,DELETE,OPTIONS')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response
 
     # ROUTES
     #
@@ -34,7 +51,7 @@ def create_app(test_config=None):
         movies = [movie.short() for movie in movies_all]
         return jsonify({
             'success': True,
-            'drinks': movies
+            'movies': movies
             }), 200
 
     '''
@@ -48,7 +65,7 @@ def create_app(test_config=None):
         actors = [role.actor() for role in roles_movie]
         return jsonify({
             'success': True,
-            'movie': movie.title,
+            'movies': movie.title,
             'actors': actors
             }), 200
 
@@ -62,7 +79,7 @@ def create_app(test_config=None):
         actors = [actor.short() for actor in actors_all]
         return jsonify({
             'success': True,
-            'drinks': actors
+            'actors': actors
             }), 200
 
     '''
@@ -76,7 +93,7 @@ def create_app(test_config=None):
         movies = [role.movie() for role in roles_actor]
         return jsonify({
             'success': True,
-            'actor': actor.name,
+            'actors': actor.name,
             'movies': movies
             }), 200
     '''
@@ -107,17 +124,17 @@ def create_app(test_config=None):
     def delete_actor(_, actor_id):
         # check if the item is existing
         actor = Actor.query.filter(Actor.id == actor_id).one_or_none()
-        try:
-            if actor is None:
-                abort(404)
+        #try:
+        if actor is None:
+            abort(404)
 
-            actor.delete()
-            return jsonify({
-                    'success': True,
-                    'delete': actor.id
-                }), 200
-        except Exception:
-            abort(422)
+        actor.delete()
+        return jsonify({
+                'success': True,
+                'delete': actor.id
+            }), 200
+        #except Exception:
+        #    abort(422)
 
     '''
     POST /movies
@@ -186,25 +203,54 @@ def create_app(test_config=None):
     @requires_auth('patch:movies')
     def update_movie(_, movie_id):
         # check if the item is existing
-        drink = Movie.query.filter(Movie.id == movie_id).one_or_none()
-        # respond with 404 if drink is empty = <id> not founbd
-        if drink is None:
+        movie = Movie.query.filter(Movie.id == movie_id).one_or_none()
+        # respond with 404 if movie is empty = <id> not founbd
+        if movie is None:
             abort(404)
         # check the body
         try:
             body = request.get_json()
-            drink.title = body.get('title', drink.title)
-            if "recipe" in body:
-                drink.recipe = json.dumps([body.get('recipe')])
-            drink.update()
+            movie.title = body.get('title', movie.title)
+            if "release" in body:
+                movie.release = body.get('release')
+            movie.update()
 
             return jsonify({
                     'success': True,
-                    'drinks': [drink.long()],
+                    'movies': [movie.short()],
                 })
         except Exception:
             abort(422)
 
+    '''
+        PATCH /actors/<id>
+    '''
+    @app.route("/actors/<int:actor_id>", methods=['PATCH'])
+    @requires_auth('patch:actors')
+    def update_actors(_, actor_id):
+        # check if the item is existing
+        actor = Actor.query.filter(Actor.id == actor_id).one_or_none()
+        # respond with 404 if actor is empty = <id> not founbd
+        if actor is None:
+            abort(404)
+        # check the body
+        try:
+            body = request.get_json()
+            if "name" in body:
+                actor.name = body.get('name')
+            if "gender" in body:
+                actor.gender = body.get('gender')
+            if "age" in body:
+                actor.age = body.get('age')
+
+            actor.update()
+
+            return jsonify({
+                    'success': True,
+                    'actors': [actor.short()],
+                })
+        except Exception:
+            abort(422)
 
 
     # Error Handling
@@ -212,7 +258,7 @@ def create_app(test_config=None):
     Example error handling for unprocessable entity
     '''
     '''
-    @TODO implement error handlers using the @app.errorhandler(error) decorator
+    implement error handlers using the @app.errorhandler(error) decorator
         each error handler should return (with approprate messages):
                 jsonify({
                         "success": False,
@@ -272,7 +318,7 @@ def create_app(test_config=None):
 
 
     '''
-    @TODO implement error handler for AuthError
+    implement error handler for AuthError
         error handler should conform to general task above
     '''
 
