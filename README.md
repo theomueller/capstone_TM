@@ -4,7 +4,7 @@
 
 ## Structure
 
-1. [`./backend/`](./backend/README_backend.md)
+1. [`./backend/`](./backend/src/README_backend.md)
 
 ## About the Stack
 
@@ -14,7 +14,7 @@ The backend of a full stack application is basically implemented for you. It is 
 
 The `./backend` directory contains a partially completed Flask server with a pre-written SQLAlchemy module to simplify your data needs. Some endpoints are already configured and integrated Auth0 for authentication.
 
-[View the README.md within ./backend for more details.](./backend/README.md)
+[View the README.md within ./backend for more details.](./backend/src/README.md)
 
 ### Next steps
 
