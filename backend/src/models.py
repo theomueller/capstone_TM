@@ -45,10 +45,14 @@ def db_drop_and_create_all():
     movie1.insert()
     movie2 = Movie(title='The 5th Element')
     movie2.insert()
+    movie3 = Movie(title='Leon')
+    movie3.insert()
     actor1 = Actor(name='John Doe')
     actor1.insert()
     actor2 = Actor(name='John Smith')
     actor2.insert()
+    actor3 = Actor(name='Dave Smith')
+    actor3.insert()
     role = Role(movie_id=movie1.id, actor_id= actor1.id)
     role.insert()
     role = Role(movie_id=movie1.id, actor_id= actor2.id)
@@ -68,7 +72,7 @@ Roles associates actors with movies
 class Movie(db.Model):
     __tablename__='movies'
     id = Column(db.Integer, primary_key=True)
-    title = Column(db.String(80), unique=True)
+    title = Column(db.String(80))
     release = Column(db.DateTime, default=datetime.utcnow)
     actors = db.relationship('Actor',secondary="roles",back_populates="movies")
     #roles = db.relationship('Role', backref=db.backref('movie'), lazy='joined')

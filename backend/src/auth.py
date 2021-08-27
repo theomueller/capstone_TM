@@ -147,14 +147,14 @@ def verify_decode_jwt(token):
                 'e': key['e']
             }
     if rsa_key:
-        payload = jwt.decode(
+        try:
+            payload = jwt.decode(
                 token,
                 rsa_key,
                 algorithms=ALGORITHMS,
                 audience=API_AUDIENCE,
                 issuer='https://' + AUTH0_DOMAIN + '/'
             )
-        try:
             return payload
         except jwt.ExpiredSignatureError:
             raise AuthError({
