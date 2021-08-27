@@ -4,12 +4,11 @@
 
 ## Structure
 
-1. [`./backend/`](./backend/README.md)
-2. [`./frontend/`](./frontend/README.md)
+1. [`./backend/`](./backend/README_backend.md)
 
 ## About the Stack
 
-The full stack application is basically implemented for you. It is designed with some key functional areas:
+The backend of a full stack application is basically implemented for you. It is designed with one key functional area:
 
 ### Backend
 
@@ -17,8 +16,10 @@ The `./backend` directory contains a partially completed Flask server with a pre
 
 [View the README.md within ./backend for more details.](./backend/README.md)
 
-### Frontend
+### Next steps
 
-The `./frontend` directory contains a complete Ionic frontend to consume the data from the Flask server. You will only need to update the environment variables found within (./frontend/src/environment/environment.ts) to reflect the Auth0 configuration details set up for the backend app.
+Dear friends feel free to implement a front end to use the great API !
 
-[View the README.md within ./frontend for more details.](./frontend/README.md)
+### Thanks
+
+To udacity teachers and great studens !

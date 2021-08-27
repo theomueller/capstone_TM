@@ -254,26 +254,6 @@ def create_app(test_config=None):
 
 
     # Error Handling
-    '''
-    Example error handling for unprocessable entity
-    '''
-    '''
-    implement error handlers using the @app.errorhandler(error) decorator
-        each error handler should return (with approprate messages):
-                jsonify({
-                        "success": False,
-                        "error": 404,
-                        "message": "resource not found"
-                        }), 404
-    @app.errorhandler(422)
-    def unprocessable(error):
-        return jsonify({
-            "success": False,
-            "error": 422,
-            "message": "unprocessable"
-        }), 422
-    '''
-
 
     @app.errorhandler(405)
     def not_found(error):
@@ -283,13 +263,6 @@ def create_app(test_config=None):
             "message": "method not allowed"
             }), 405
 
-
-    '''
-    @TODO implement error handler for 404
-        error handler should conform to general task above
-    '''
-
-
     @app.errorhandler(404)
     def not_found(error):
         return jsonify({
@@ -297,7 +270,6 @@ def create_app(test_config=None):
                 "error": 404,
                 "message": "resource not found"
         }), 404
-
 
     @app.errorhandler(422)
     def unprocessable(error):
@@ -321,7 +293,6 @@ def create_app(test_config=None):
     implement error handler for AuthError
         error handler should conform to general task above
     '''
-
 
     @app.errorhandler(AuthError)
     def auth_error(message):
