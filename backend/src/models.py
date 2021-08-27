@@ -19,14 +19,12 @@ setup_db(app)
 '''
 
 
-def setup_db(app,database_path):
+def setup_db(app, database_path):
     app.config["SQLALCHEMY_DATABASE_URI"] = database_path
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     db.app = app
     db.init_app(app)
-    #db_drop_and_create_all()
-
-
+    # db_drop_and_create_all()
 
 '''
 db_drop_and_create_all()
@@ -53,29 +51,34 @@ def db_drop_and_create_all():
     actor2.insert()
     actor3 = Actor(name='Dave Smith')
     actor3.insert()
-    role = Role(movie_id=movie1.id, actor_id= actor1.id)
+    role = Role(movie_id=movie1.id, actor_id=actor1.id)
     role.insert()
-    role = Role(movie_id=movie1.id, actor_id= actor2.id)
+    role = Role(movie_id=movie1.id, actor_id=actor2.id)
     role.insert()
-    role = Role(movie_id=movie2.id, actor_id= actor2.id)
+    role = Role(movie_id=movie2.id, actor_id=actor2.id)
     role.insert()
-   
+
 
 '''
 TABLES
 Movies with attributes title and release date
-Actors with attributes name, gender 
+Actors with attributes name, gender
 Roles associates actors with movies
 '''
 
+
 # Table MOVIE
 class Movie(db.Model):
-    __tablename__='movies'
+    __tablename__ = 'movies'
     id = Column(db.Integer, primary_key=True)
     title = Column(db.String(80))
     release = Column(db.DateTime, default=datetime.utcnow)
-    actors = db.relationship('Actor',secondary="roles",back_populates="movies")
-    #roles = db.relationship('Role', backref=db.backref('movie'), lazy='joined')
+    actors = db.relationship('Actor',
+                             secondary="roles",
+                             back_populates="movies")
+    # roles = db.relationship('Role',
+    #       backref=db.backref('movie'),
+    #       lazy='joined')
 
     def __repr__(self):
         return json.dumps(self.short())
@@ -87,7 +90,7 @@ class Movie(db.Model):
     def short(self):
         return {
             'id': self.id,
-            'name':self.title,
+            'name': self.title,
             'actors': [actor.name for actor in self.actors]
             }
 
@@ -119,7 +122,6 @@ class Movie(db.Model):
     def update(self):
         db.session.commit()
 
-  
 
 class Actor(db.Model):
     __tablename__ = "actors"
@@ -127,8 +129,12 @@ class Actor(db.Model):
     name = Column(db.String, nullable=False)
     age = Column(db.Integer)
     gender = Column(db.String)
-    movies = db.relationship('Movie', secondary="roles",back_populates="actors")
-    #roles = db.relationship('Role', backref=db.backref('actor'), lazy='joined')
+    movies = db.relationship('Movie',
+                             secondary="roles",
+                             back_populates="actors")
+    # roles = db.relationship('Role',
+    #           backref=db.backref('actor'),
+    #           lazy='joined')
 
     def __repr__(self):
         return f"<Actor {self.id} name:{self.name}>"
@@ -139,7 +145,7 @@ class Actor(db.Model):
     def short(self):
         return {
             'id': self.id,
-            'name':self.name
+            'name': self.name
             }
 
     '''
@@ -162,6 +168,7 @@ class Actor(db.Model):
     def update(self):
         db.session.commit()
 
+
 class Role(db.Model):
     __tablename__ = "roles"
 
@@ -172,9 +179,9 @@ class Role(db.Model):
     id = Column(db.Integer, primary_key=True)
     movie_id = Column(db.Integer, db.ForeignKey('movies.id'))
     actor_id = Column(db.Integer, db.ForeignKey('actors.id'))
-    #movie = db.relationship(Movie, backref=db.backref("roles", cascade="all, delete-orphan"),overlaps="actors,movies")
-    #actor = db.relationship(Actor, backref=db.backref("roles",cascade="all, delete-orphan"),overlaps="actors,movies")
-   
+    # movie = db.relationship(Movie, backref=db.backref("roles")
+    # actor = db.relationship(Actor, backref=db.backref("roles")
+
     def __repr__(self):
         return f"<Role {self.id}>"
 
@@ -184,7 +191,7 @@ class Role(db.Model):
     def short(self):
         return {
             'id': self.id,
-            'movie':self.movie,
+            'movie': self.movie,
             'actor': self.actor
             }
     '''

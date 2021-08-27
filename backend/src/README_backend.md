@@ -86,6 +86,7 @@ The `--reload` flag will detect file changes and restart the server automaticall
 ### Best practice
 
 the code adheres as far as possible to the PEP8 Style Guide
+-> checked were app.py and models.py
 
 ### Descrption repo
 

@@ -3,20 +3,20 @@ from flask import Flask, request, jsonify, abort
 import json
 from flask_cors import CORS
 
-from models import  setup_db, Movie, Actor, Role
+from models import setup_db, Movie, Actor, Role
 from auth import AuthError, requires_auth
+
 
 def create_app(test_config=None):
     ''' To initiliase a env variable it should be EXPORT in the cmd line'''
     ''' Moreover don't forget to start the server'''
-    
-    database_path = os.environ['DATABASE_URL']
-    if database_path.startswith("postgres://"):
-        database_path = database_path.replace("postgres://", "postgresql://", 1)
-    
+
+    dbpath = os.environ['DATABASE_URL']
+    if dbpath.startswith("postgres://"):
+        dbpath = dbpath.replace("postgres://", "postgresql://", 1)
 
     app = Flask(__name__)
-    setup_db(app, database_path)
+    setup_db(app, dbpath)
     CORS(app)
 
     # CORS Headers
@@ -32,14 +32,12 @@ def create_app(test_config=None):
     # ROUTES
     #
 
-
     # just to test if the app is running and if we have any
     # error with dependencies
     @app.route('/')
     def hello_world():
         return jsonify({'message': 'Test server!'})
     #
-
 
     '''
     GET /movies
@@ -61,7 +59,8 @@ def create_app(test_config=None):
     @requires_auth('get:movies')
     def role_movie(movie_id):
         movie = Movie.query.get(movie_id)
-        roles_movie = Role.query.join(Actor).filter(Role.movie_id==movie_id).all()
+        roles_movie = Role.query.join(Actor).filter(
+            Role.movie_id == movie_id).all()
         actors = [role.actor() for role in roles_movie]
         return jsonify({
             'success': True,
@@ -89,7 +88,8 @@ def create_app(test_config=None):
     @requires_auth('get:actors')
     def role_actor(actor_id):
         actor = Actor.query.get(actor_id)
-        roles_actor = Role.query.join(Movie).filter(Role.actor_id==actor_id).all()
+        roles_actor = Role.query.join(Movie).filter(
+            Role.actor_id == actor_id).all()
         movies = [role.movie() for role in roles_actor]
         return jsonify({
             'success': True,
@@ -124,17 +124,17 @@ def create_app(test_config=None):
     def delete_actor(_, actor_id):
         # check if the item is existing
         actor = Actor.query.filter(Actor.id == actor_id).one_or_none()
-        #try:
-        if actor is None:
-            abort(404)
+        try:
+            if actor is None:
+                abort(404)
 
-        actor.delete()
-        return jsonify({
-                'success': True,
-                'delete': actor.id
-            }), 200
-        #except Exception:
-        #    abort(422)
+            actor.delete()
+            return jsonify({
+                    'success': True,
+                    'delete': actor.id
+                }), 200
+        except Exception:
+            abort(422)
 
     '''
     POST /movies
@@ -147,8 +147,8 @@ def create_app(test_config=None):
         try:
             # extract the title
             new_title = body.get('title')
-            new_release =body.get('release')
-            # add a test to avoid creating emppty drinks
+            new_release = body.get('release')
+            # add a test to avoid creating emppty movies
             if (new_title is None or new_release is None):
                 abort(400)
 
@@ -175,13 +175,13 @@ def create_app(test_config=None):
         try:
             # extract the title
             new_name = body.get('name')
-            new_age =body.get('age')
-            new_gender=body.get('gender')
-            # add a test to avoid creating emppty drinks
-            if (new_name is None 
-            or new_age is None
-            or new_gender is None):
-                abort(400)
+            new_age = body.get('age')
+            new_gender = body.get('gender')
+            # add a test to avoid creating emppty actors
+            if (new_name is None or
+                new_age is None or
+                    new_gender is None):
+                    abort(400)
 
             actor = Actor(
                 name=new_name,
@@ -252,7 +252,6 @@ def create_app(test_config=None):
         except Exception:
             abort(422)
 
-
     # Error Handling
 
     @app.errorhandler(405)
@@ -279,7 +278,6 @@ def create_app(test_config=None):
             "message": "unprocessable"
         }), 422
 
-
     @app.errorhandler(500)
     def server_error(error):
         return jsonify({
@@ -287,7 +285,6 @@ def create_app(test_config=None):
             "error": 500,
             "message": "INTERNAL SERVER ERROR"
             }), 500
-
 
     '''
     implement error handler for AuthError
