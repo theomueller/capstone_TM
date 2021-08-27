@@ -48,11 +48,7 @@ python3 manage.py db upgrade
 Each time you open a new terminal session, run:
 
 ```bash
-export FLASK_APP=app.py;
-```
-
-```bash
-export HEROKU_DEPLOY = true;
+source setup.sh
 ```
 
 To run the server, execute:
@@ -66,3 +62,7 @@ The `--reload` flag will detect file changes and restart the server automaticall
 ## Best practice
 
 the code adheres as far as possible to the PEP8 Style Guide
+
+# Description API
+
+Postmann: https://documenter.getpostman.com/view/9891951/TzzHksev
